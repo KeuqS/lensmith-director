@@ -76,7 +76,7 @@ All of them except `cursor position`, `native doctor` and `native tree` post rea
 | `cursor position` | no | Print the current cursor position. `--json` |
 | `cursor move <x> <y>` | yes | Move the real cursor along an eased path. `--duration-ms` (default 500; 0 is rejected), `--json` |
 | `cursor click` | yes | Click at the current cursor position. `--json` |
-| `drive` | yes | Open Chrome, run a step list through the real cursor, write an action log and a zoom-regions fragment. `--steps`, `--out`, `--zooms`, `--profile-dir`, `--browser-channel`, `--keep-open`, `--narration <timings.json>` (a step's optional `say` line, at most one `[[mark]]`, is timed to line `s<index>`: `s0`, `s1`, …; the click lands on the mark and the result holds until the line ends + 600 ms) |
+| `drive` | yes | Open Chrome, run a step list through the real cursor, write an [action log](docs/action-log.md) and a zoom-regions fragment. `--steps`, `--out`, `--zooms`, `--profile-dir`, `--browser-channel`, `--keep-open`, `--narration <timings.json>` (a step's optional `say` line, at most one `[[mark]]`, is timed to line `s<index>`: `s0`, `s1`, …; the click lands on the mark and the result holds until the line ends + 600 ms) |
 | `demo` | yes | Narrate the `say` lines (when any), record, drive, compose and render one clip, and write a manifest. `--steps`, `--out-dir`, `--profile-dir`, `--browser-channel`, `--voice`, `--engine`, `--captions burn\|srt\|none` (with `say` lines the delivered film is `final-voiced.mp4`) |
 | `native doctor` | no | Check that this Mac can drive native apps. Never prompts. `--json` |
 | `native tree` | no | Print an app's Accessibility tree to pick locators. `--app <bundleId>` (required), `--in`, `--depth`, `--json` |
