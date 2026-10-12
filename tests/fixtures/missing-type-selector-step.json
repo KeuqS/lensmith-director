@@ -1,0 +1,11 @@
+{
+	"url": "http://localhost:4173/drive-test-page.html",
+	"steps": [
+		{
+			"type": "type",
+			"selector": "#this-field-does-not-exist-on-the-page",
+			"text": "should fail loudly",
+			"label": "should fail loudly"
+		}
+	]
+}

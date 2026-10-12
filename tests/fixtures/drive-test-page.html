@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lensmith Director — drive test page</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #14161a;
+    color: #e8e8ec;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  }
+  button {
+    position: absolute;
+    font-size: 16px;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #14161a;
+  }
+  /* Fixed, known positions — CR-LENSMITH-A002-2's Invariants require a
+     KNOWN, hand-measured element position for the calibration positive
+     control. Do not change these without re-measuring the tolerance check. */
+  #btn-one {
+    left: 120px;
+    top: 160px;
+    width: 160px;
+    height: 56px;
+    background: #7fd1ae;
+  }
+  #btn-two {
+    left: 520px;
+    top: 360px;
+    width: 160px;
+    height: 56px;
+    background: #f2b880;
+  }
+  /* CR-LENSMITH-A002-6 — the `type` step's acceptance fixture: a text field
+     and a submit button, same fixed/hand-measured positioning discipline as
+     #btn-one/#btn-two above. */
+  #text-field {
+    position: absolute;
+    left: 120px;
+    top: 260px;
+    width: 240px;
+    height: 36px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  #btn-submit {
+    left: 120px;
+    top: 320px;
+    width: 160px;
+    height: 44px;
+    background: #9fc6ff;
+  }
+  #log {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    white-space: pre;
+  }
+</style>
+</head>
+<body>
+  <div id="log"></div>
+  <button id="btn-one" type="button">Button One</button>
+  <button id="btn-two" type="button">Button Two</button>
+  <input id="text-field" type="text" autocomplete="off" />
+  <button id="btn-submit" type="button">Submit</button>
+  <script>
+    // The acceptance run (CR-LENSMITH-A002-2 Metric 4, machine-window-gated)
+    // reads `window.__lensmithClickLog` to confirm `isTrusted: true` on both
+    // clicks — proof the OS cursor, not Playwright's synthetic input,
+    // delivered them. Same pattern CR-LENSMITH-A002-1 used for its own
+    // isTrusted evidence.
+    (function () {
+      var entries = [];
+      var logEl = document.getElementById("log");
+
+      function record(event) {
+        var entry = {
+          id: event.currentTarget.id,
+          isTrusted: event.isTrusted,
+          atMs: Math.round(performance.now()),
+        };
+        entries.push(entry);
+        window.__lensmithClickLog = entries;
+        logEl.textContent = JSON.stringify(entries, null, 2);
+      }
+
+      document.getElementById("btn-one").addEventListener("click", record);
+      document.getElementById("btn-two").addEventListener("click", record);
+      document.getElementById("btn-submit").addEventListener("click", record);
+    })();
+
+    // CR-LENSMITH-A002-6's own acceptance evidence: `window.__lensmithTypeLog`
+    // records the field's live value plus `isTrusted` on every native `input`
+    // event — proof the characters arrived as real input events (Acceptance
+    // Metric), the same `isTrusted` discipline the click log above already
+    // established. This is read by the operator/forge report, never by
+    // `drive` itself — the CLI never inspects page-side state.
+    (function () {
+      var field = document.getElementById("text-field");
+      var typeEntries = [];
+      field.addEventListener("input", function (event) {
+        typeEntries.push({
+          value: field.value,
+          isTrusted: event.isTrusted,
+          atMs: Math.round(performance.now()),
+        });
+        window.__lensmithTypeLog = typeEntries;
+      });
+    })();
+  </script>
+</body>
+</html>

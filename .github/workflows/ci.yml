@@ -1,0 +1,112 @@
+name: ci
+
+# CI gate for Lensmith Director. Four gates: lint (biome) · build (tsc + swiftc)
+# · test (vitest, against the built CLI) · repo-clean, plus a secrets scan. No
+# database, no migrations, no deploy — none apply to this product.
+#
+# Runs on macos-latest because the cursor helper is Swift/CoreGraphics and must
+# actually compile as part of the gate. What CI deliberately does NOT do is post
+# a single mouse event: a hosted runner cannot be granted Accessibility
+# permission headlessly, and more importantly a test suite must never take over
+# a machine. Real motion and real clicks are verified by hand, announced, on a
+# machine nobody else is using; the automated suite covers the cursor wrapper
+# against a fake helper that speaks the same protocol.
+#
+# CR-LENSMITH-A002-2 (`drive`) added a real, HEADLESS Chromium test
+# (tests/driveRealBrowser.test.ts) — headless opens no visible window and
+# never touches the OS cursor (its choreographer is an in-memory fake too), so
+# it does not violate the "never take over a machine" rule above; it proves
+# the calibration formula against genuine DOM measurement instead of a
+# hand-simulated `PageLike`. That test needs a real Chromium binary, hence the
+# install step below — same reasoning, same command, as the sibling `lensmith`
+# engine repo's own CI (its render harness has needed this since
+# CR-LENSMITH-A001-4).
+#
+# `pull_request` is listed FIRST and on purpose: this workflow must fire on
+# every pull request, not only on pushes to main.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege (CR-LENSMITH-A006-2): no step writes to the repo or PRs.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: build + lint + test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Playwright's Chromium
+        # `drive` (CR-LENSMITH-A002-2) depends on `playwright` at runtime, and
+        # tests/driveRealBrowser.test.ts launches it headless. Without this,
+        # that test fails on a missing browser binary rather than a real
+        # assertion. macos-latest needs no `--with-deps` (that flag installs
+        # Linux apt packages only; irrelevant here, see the sibling `lensmith`
+        # repo's own CI comment on this exact step).
+        run: npx playwright install chromium
+
+      - name: Lint (biome)
+        run: npm run lint
+
+      - name: Build (tsc)
+        run: npm run build
+
+      - name: Build native macOS helper (swiftc)
+        run: npm run build:native:mac
+
+      - name: Test (vitest, against dist/)
+        run: npm test
+
+      - name: Repo-clean (no stray build artifacts committed by the steps above)
+        run: |
+          git status --porcelain
+          test -z "$(git status --porcelain)" || { echo "::error::working tree not clean after build steps"; git status; exit 1; }
+
+  secrets-scan:
+    name: detect-secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install detect-secrets
+        run: pip install "detect-secrets==1.5.0"
+
+      - name: Scan against baseline
+        run: |
+          # Re-scan against the committed baseline, then fail ONLY if the actual
+          # findings (`results`) changed — i.e. a NEW secret appeared. `detect-secrets
+          # scan` always rewrites `generated_at` (and may bump `version`/`plugins_used`),
+          # so a whole-file `git diff` would be a guaranteed false positive.
+          cp .secrets.baseline /tmp/secrets-before.json
+          detect-secrets scan --baseline .secrets.baseline
+          python - <<'PY'
+          import json, sys
+          before = json.load(open("/tmp/secrets-before.json")).get("results", {})
+          after = json.load(open(".secrets.baseline")).get("results", {})
+          if before != after:
+              print("::error::detect-secrets found NEW secrets not in the baseline — "
+                    "review, then run `detect-secrets scan --baseline .secrets.baseline` locally to update.")
+              sys.exit(1)
+          print("detect-secrets: no new secrets (baseline findings unchanged).")
+          PY

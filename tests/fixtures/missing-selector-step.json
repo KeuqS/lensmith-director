@@ -1,0 +1,10 @@
+{
+	"url": "http://localhost:4173/drive-test-page.html",
+	"steps": [
+		{
+			"type": "click",
+			"selector": "#this-id-does-not-exist-on-the-page",
+			"label": "should fail loudly"
+		}
+	]
+}

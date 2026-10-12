@@ -1,0 +1,24 @@
+## Node
+node_modules/
+dist/
+npm-debug.log*
+*.tsbuildinfo
+
+## Native build artifacts — CI and operators build fresh via
+## `npm run build:native:mac`; never commit compiled Swift binaries.
+bin/
+
+## Env / secrets
+.env
+.env.*
+!.env.example
+
+## OS
+.DS_Store
+
+## Editor
+.vscode/
+.idea/
+
+## Coverage
+coverage/

@@ -1,0 +1,8 @@
+{
+	"url": "http://localhost:4173/drive-test-page.html",
+	"steps": [
+		{ "type": "click", "selector": "#btn-one", "label": "click button one" },
+		{ "type": "wait", "ms": 500 },
+		{ "type": "click", "selector": "#btn-two", "label": "click button two" }
+	]
+}

@@ -1,0 +1,13 @@
+{
+	"url": "http://localhost:4173/drive-test-page.html",
+	"steps": [
+		{ "type": "click", "selector": "#text-field", "label": "focus the text field" },
+		{
+			"type": "type",
+			"selector": "#text-field",
+			"text": "LENSMITH-A002-6-SENTINEL-VALUE",
+			"label": "type a value"
+		},
+		{ "type": "click", "selector": "#btn-submit", "label": "click submit" }
+	]
+}

@@ -1,0 +1,39 @@
+{
+	"name": "lensmith-director",
+	"version": "0.1.0",
+	"description": "Drives a running web app with the real macOS cursor and directs a demo recording of it.",
+	"private": true,
+	"type": "module",
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ynetplus/lensmith-director.git"
+	},
+	"homepage": "https://github.com/ynetplus/lensmith-director#readme",
+	"bugs": {
+		"url": "https://github.com/ynetplus/lensmith-director/issues"
+	},
+	"bin": {
+		"lensmith-director": "./dist/cli.js"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"scripts": {
+		"build": "tsc",
+		"build:native:mac": "node scripts/build-native-mac.mjs",
+		"test": "vitest run",
+		"lint": "biome check .",
+		"format": "biome check --write ."
+	},
+	"dependencies": {
+		"commander": "^12.1.0",
+		"playwright": "^1.62.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.8",
+		"@types/node": "^20.14.0",
+		"typescript": "^5.5.4",
+		"vitest": "^4.1.10"
+	}
+}

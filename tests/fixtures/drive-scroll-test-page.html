@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lensmith Director — drive scroll test page</title>
+<style>
+  html, body {
+    margin: 0;
+    background: #14161a;
+    color: #e8e8ec;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  }
+  /* A tall page (3000px) with content both above AND below the fold — a
+     realistic small viewport (e.g. 800x600, set by the test) only shows the
+     top sliver at load. CR-LENSMITH-A002-4 Technical Spec item 1 / Acceptance
+     Metric 1: proves `scrollIntoViewIfNeeded()` runs before the screen point
+     is computed, for a target the fold would otherwise hide. */
+  body {
+    height: 3000px;
+    position: relative;
+  }
+  button {
+    position: absolute;
+    font-size: 16px;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #14161a;
+  }
+  /* Fixed, known positions — do not change without re-measuring. */
+  #btn-above-fold {
+    left: 100px;
+    top: 40px;
+    width: 160px;
+    height: 56px;
+    background: #7fd1ae;
+  }
+  /* Straddles a 600px-tall viewport's bottom edge (top=560, height=56 →
+     bottom=616) — PARTIALLY visible at load, not fully off-screen. Exercises
+     the QA Scenario distinct from #btn-below-fold's fully-off-screen case. */
+  #btn-partial {
+    left: 100px;
+    top: 560px;
+    width: 160px;
+    height: 56px;
+    background: #f2b880;
+  }
+  /* Fully below the fold on any viewport shorter than ~2760px. */
+  #btn-below-fold {
+    left: 300px;
+    top: 2700px;
+    width: 160px;
+    height: 56px;
+    background: #e8a0a0;
+  }
+</style>
+</head>
+<body>
+  <button id="btn-above-fold" type="button">Above fold</button>
+  <button id="btn-partial" type="button">Partially visible</button>
+  <button id="btn-below-fold" type="button">Below fold</button>
+</body>
+</html>
